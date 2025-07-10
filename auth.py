@@ -11,15 +11,13 @@ from .settings import get_auth_config
 from .utils import import_from_path
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 Config = get_auth_config()
+
+pwd_context = CryptContext(schemes=Config.PASSWORD_SCHEMES, deprecated="auto")
 
 UserModel = import_from_path(Config.USER_MODEL)
 username_field = Config.USERNAME_FIELD
 password_field = Config.PASSWORD_FIELD
-
 
 
 async def create_access_token(data: dict):
@@ -32,7 +30,7 @@ async def create_access_token(data: dict):
 
 async def create_refresh_token(user_id: int, db: AsyncSession):
     to_encode = {"sub": user_id}
-    expire = datetime.utcnow() + Config.REFRESH_TOKEN_LIFETIME
+    expire = datetime.now(UTC) + Config.REFRESH_TOKEN_LIFETIME
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, Config.SECRET_KEY, algorithm=Config.ALGORITHM)
 
