@@ -7,12 +7,12 @@
 ## 📦 Installation
 
 ```bash
-pip install fastapi-advanced-jwt
+pip install fastapi-simple-jwt
 ```
 
 ## ⚙️ Configuration
 
-1. Create your AuthConfig class in your project (e.g. app/config.py):
+1. Create your Config class in your project (e.g. app/config.py):
 
 
 ```
@@ -44,7 +44,7 @@ class Config:
 2. Set environment variable in your .env file::
 
 ```bash
-FASTAPI_AUTH_CONFIG=app.config.AuthConfig
+FASTAPI_AUTH_CONFIG=app.config.Config
 ```
 
 
