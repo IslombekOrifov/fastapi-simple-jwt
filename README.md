@@ -4,11 +4,6 @@
 
 ---
 
-## 📦 Installation
-
-```bash
-pip install fastapi-simple-jwt
-```
 
 ## ⚙️ Configuration
 
@@ -46,6 +41,16 @@ class Config:
 ```bash
 FASTAPI_AUTH_CONFIG=app.config.Config
 ```
+
+## 🛠️ Database Migration
+
+Your project's Alembic configuration already includes your Base.
+
+Since `fastapi-advanced-jwt` uses your configured `Base` from `Config.BASE`, simply run:
+
+```bash
+alembic revision --autogenerate -m "Add RefreshToken table"
+alembic upgrade head
 
 
 ## 🚀 Usage
