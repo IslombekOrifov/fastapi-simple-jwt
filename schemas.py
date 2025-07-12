@@ -20,6 +20,6 @@ class Login(BaseModel):
 
 
 class DeviceSession(BaseModel):
-    refresh_token: str
+    id: int
     device_name: str
     created_at: str

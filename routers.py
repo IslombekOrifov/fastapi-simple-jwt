@@ -88,7 +88,7 @@ async def active_sessions(
 ):
     tokens = await auth.get_active_sessions(user.id, db)
     return [{
-        "refresh_token": t.token,
+        "id": t.id,
         "device_name": t.device_name,
         "created_at": t.created_at.isoformat()
     } for t in tokens]
