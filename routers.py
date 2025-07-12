@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from . import schemas, auth
 from .dependencies import get_current_user
 from .db import get_session
-from .utils import import_from_path
+from .utils import import_from_path, hash_fingerprint
 
 
 router = APIRouter()
@@ -24,9 +24,11 @@ async def login(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid credentials"
         )
+        
+    fp_hash = hash_fingerprint(data.fingerprint)
 
     access_token = await auth.create_access_token({"sub": user.id})
-    refresh_token = await auth.create_refresh_token(user.id, db)
+    refresh_token = await auth.create_refresh_token(user.id, db, data.device_name, fp_hash)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
@@ -41,9 +43,18 @@ async def refresh(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token"
         )
+    q = await db.execute(select(RefreshToken).where(RefreshToken.token == data.refresh_token))
+    refresh_token = q.scalar_one_or_none()
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    fp_hash = hash_fingerprint(data.fingerprint)
+    if refresh_token.fingerprint_hash != fp_hash:
+        raise HTTPException(status_code=401, detail="Device mismatch")
+    
     new_access = await auth.create_access_token({"sub": payload["sub"]})
     new_refresh = await auth.rotate_refresh_token(
-        data.refresh_token, payload["sub"], db
+        data.refresh_token, payload["sub"], db, refresh_token.device_name, refresh_token.fingerprint_hash
     )
     return {"access_token": new_access, "refresh_token": new_refresh}
 
@@ -76,6 +87,7 @@ async def active_sessions(
     tokens = await auth.get_active_sessions(user.id, db)
     return [{
         "refresh_token": t.token,
+        "device_name": t.device_name,
         "created_at": t.created_at.isoformat()
     } for t in tokens]
 

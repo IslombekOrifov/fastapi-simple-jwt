@@ -67,6 +67,57 @@ app.include_router(router)
 
 ```
 
+in fronend you should add fingerprint too:
+```
+<script src="https://openfpcdn.io/fingerprintjs/v3"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clientjs/0.1.11/client.min.js"></script>
+
+<script>
+  async function getFingerprint() {
+    const fp = await FingerprintJS.load();
+    const result = await fp.get();
+    const client = new ClientJS();
+
+    const advanced_fp = {
+      visitorId: result.visitorId,
+      userAgent: client.getUserAgent(),
+      os: client.getOS(),
+      osVersion: client.getOSVersion(),
+      browser: client.getBrowser(),
+      browserVersion: client.getBrowserVersion(),
+      screenPrint: client.getScreenPrint(),
+      timezone: client.getTimeZone(),
+      language: client.getLanguage(),
+      cpu: client.getCPU(),
+      plugins: client.getPlugins(),
+      fonts: client.getFonts(),
+      canvasPrint: client.getCanvasPrint(),
+      deviceMemory: navigator.deviceMemory || "unknown",
+      hardwareConcurrency: navigator.hardwareConcurrency || "unknown",
+    };
+
+    return advanced_fp;
+  }
+
+  async function login() {
+    const fingerprint = await getFingerprint();
+    const response = await fetch("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "test@example.com",
+        password: "password",
+        fingerprint: fingerprint
+      })
+    });
+    const data = await response.json();
+    console.log(data);
+  }
+</script>
+```
+
+## Don't forget add text about saved datas with hashed fingerprint to your Privacy&Policy in your site!
+
 ## 📲 Endpoints
 
 | Method | Path                    | Description                                               |

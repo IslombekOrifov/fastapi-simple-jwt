@@ -28,7 +28,7 @@ async def create_access_token(data: dict):
     return encoded_jwt
 
 
-async def create_refresh_token(user_id: int, db: AsyncSession):
+async def create_refresh_token(user_id: int, db: AsyncSession, device_name: str, fp_hash: str):
     to_encode = {"sub": user_id}
     expire = datetime.now(UTC) + Config.REFRESH_TOKEN_LIFETIME
     to_encode.update({"exp": expire})
@@ -38,6 +38,8 @@ async def create_refresh_token(user_id: int, db: AsyncSession):
         user_id=user_id,
         token=encoded_jwt,
         expires_at=expire,
+        device_name=device_name,
+        fingerprint_hash=fp_hash
     )
     db.add(db_token)
     await db.commit()
@@ -65,10 +67,12 @@ async def blacklist_refresh_token(token: str, db: AsyncSession):
         await db.commit()
 
 
-async def rotate_refresh_token(old_token: str, user_id: int, db: AsyncSession):
+async def rotate_refresh_token(old_token: str, user_id: int, db: AsyncSession, device_name, fp_hash):
+    refresh_token = old_token
     if Config.ROTATE_REFRESH_TOKENS:
         await blacklist_refresh_token(old_token, db)
-    return await create_refresh_token(user_id, db)
+        refresh_token = await create_refresh_token(user_id, db, device_name, fp_hash)
+    return refresh_token
 
 
 async def get_active_sessions(user_id: int, db: AsyncSession):

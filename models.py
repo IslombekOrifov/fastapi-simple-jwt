@@ -18,6 +18,8 @@ class RefreshToken(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(Integer, nullable=False)
     token: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    device_name = mapped_column(String, nullable=False)
+    fingerprint_hash = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
